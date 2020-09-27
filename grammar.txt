@@ -1,0 +1,18 @@
+? = optional
++ = 1 or more
+* = 0 or more
+
+<prog>   ::= (expr NEWLINE)* EOF
+<newline>::= '\n'
+<expr>   ::= <expr> ('+'|'-') <expr>
+           | <expr> ('*'|'/') <expr>
+           | <expr> '^' <expr>
+           | '(' <expr> ')'
+           | <unary>? <num>
+
+<num>    ::= '-'? <digit>+ ('.'<digit>+)?
+<assign> ::= varName "=" <expr>
+
+<digit>  ::= '0'|..|'9'
+<unary>  ::= '-'
+
