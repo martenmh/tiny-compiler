@@ -11,23 +11,17 @@
 #include "parsers/lr.h"
 #include "parsers/pratt.h"
 
-//// Creates a ARMv8 / x86_64 binary example.out
-//void compile(ParseTree tree){}
-//// Runs the parse tree
-//void interpret(ParseTree tree){}
+#include "evaluation.h"
 
+using AST = BTree<Token>;
 
 void eval(std::string& str){
-//    interpret(LRparse(tokenize(str)));
-//    interpret(LLparse(tokenize(str)));
-//    interpret(prattParse(tokenize(str)));
-//    prattParse
-    //compile(parse(tokenize(str)));
     auto p = tokenize(str);
-    for(auto& token : p){
-        std::cout << "\"" << std::string(token.start,token.length) << "\", ";
-    }
-    std::cout << std::endl;
+	std::cout << p << std::endl;
+	auto ast = parse(p);
+	std::cout << ast << std::endl;
+	std::cout << compile(ast) << std::endl;
+	std::cout << interpret(ast) << std::endl;
 }
 
 void REPL(){
@@ -44,10 +38,6 @@ void REPL(){
 }
 
 int main() {
-    //SyntaxTree a;
-    //ExpressionNode root(ADD, 0, {INTEGER, 52}, {FLOAT, 3.62});
-    //postorder(&root);
-    //a.emplace(ADD, NULL, ExpressionNode{FLOAT, 3.52}, ExpressionNode{INTEGER, 1});
     REPL();
     return 0;
 }

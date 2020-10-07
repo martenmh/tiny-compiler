@@ -7,29 +7,75 @@
 
 #include <vector>
 #include <string>
+#include <cmath>
 
 #include "syntaxtree.h"
+#include "BTree.h"
 
-
-class RecursiveDescentParser {
+struct Expression {
+	TokenType type;
+	std::any value;
 };
-SyntaxTree rparse(std::vector<Token> tokens){
-    SyntaxTree tree;
-    Precedence p;
-    for(int i = 0; tokens[i].type != TOKEN_EOF; i++){
-        switch(tokens[i].type){
-            case TOKEN_NUMBER: break;
-            case TOKEN_PLUS: break;
-            case TOKEN_MIN: break;
-            case TOKEN_MUL: break;
-            case TOKEN_SLASH: break;
-            case TOKEN_LEFT_PAREN: break;
-            case TOKEN_POW: break;
-            //default: break;
-        }
-       //tree.emplace_back(Node{.type = NodeType::Num, .value = std::stof(tokens[i])});
 
-    }
+using AST = BTree<Token>;
+
+std::optional<Token> maybe_match(std::queue<Token>& tokens, char c){
+	if(*tokens.front().start == c){
+		auto tok = tokens.front();
+		tokens.pop();
+		return tok;
+	}
+	else return std::nullopt;
+}
+
+template<typename ...Arr>
+std::optional<Token> maybe_match(std::queue<Token>& tokens, char c, Arr&& ...args){
+	std::optional<Token> tok = maybe_match(tokens, args...);
+	if(tok.has_value()) {
+		return tok;
+	} else if(*tokens.front().start == c) {
+		auto tok = tokens.front();
+		tokens.pop();
+		return tok;
+	} else return std::nullopt;
+}
+
+AST::Node term(std::queue<Token>& tokens);
+
+AST::Node expression(std::queue<Token>& tokens){
+	auto lhs = term(tokens);
+	while(true){
+		std::optional<Token> op = maybe_match(tokens, '+','-');
+		if(!op.has_value()) break;
+		auto rhs = term(tokens);
+		lhs = AST::Node(*op, lhs, rhs);
+	}
+	return lhs;
+}
+
+AST::Node factor(std::queue<Token>& tokens){
+	auto tok = tokens.front();
+	if(tok.type == TOKEN_LEFT_PAREN){
+		tokens.pop();
+		return expression(tokens);
+	}
+	tokens.pop();
+	return AST::Node(tok);
+}
+
+AST::Node term(std::queue<Token>& tokens){
+	auto lhs = factor(tokens);
+	while(tokens.front().type != TOKEN_EOF){
+		std::optional<Token> op = maybe_match(tokens, '*','/');
+		if(!op.has_value()) break;
+		auto rhs = factor(tokens);
+		lhs = AST::Node(*op, lhs, rhs);
+	}
+	return lhs;
+}
+
+AST parse(std::queue<Token>& tokens){
+	return AST(expression(tokens));
 }
 
 #endif //PARSING_RECURSIVEDESCENT_H
